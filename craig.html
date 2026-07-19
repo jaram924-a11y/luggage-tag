@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Found this luggage?</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6f8; color: #1a1a2e;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: #fff; border-radius: 16px; padding: 32px 24px;
+    max-width: 420px; width: 100%; text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+  }
+  .emoji { font-size: 48px; }
+  h1 { font-size: 22px; margin: 12px 0 8px; }
+  p { font-size: 15px; color: #555; line-height: 1.5; margin-bottom: 8px; }
+  button, a.btn {
+    display: block; width: 100%; padding: 15px; margin-top: 14px;
+    font-size: 17px; font-weight: 600; border: none; border-radius: 12px;
+    cursor: pointer; text-decoration: none;
+  }
+  #textBtn { background: #0a84ff; color: #fff; }
+  a.call { background: #e9f8ee; color: #1e7c3a; }
+  #status { margin-top: 14px; font-size: 14px; color: #888; min-height: 20px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="emoji">🧳</div>
+  <h1>Found this luggage?</h1>
+  <p>Thank you for scanning! Please tap the button below — it will send the owner a text with this bag's current location.</p>
+  <button id="textBtn">📍 Text the owner my location</button>
+  <a class="btn call" href="tel:+14192904787">📞 Or call the owner</a>
+  <div id="status"></div>
+</div>
+<script>
+  var PHONE = "+14192904787";
+  var MSG = "Hi. This is where your luggage is right now: ";
+  var statusEl = document.getElementById("status");
+
+  function smsLink(body) {
+    var sep = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent) ? "&" : "?";
+    return "sms:" + PHONE + sep + "body=" + encodeURIComponent(body);
+  }
+
+  document.getElementById("textBtn").addEventListener("click", function () {
+    statusEl.textContent = "Getting location… please allow access.";
+    if (!navigator.geolocation) { fallback(); return; }
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        var lat = pos.coords.latitude.toFixed(6);
+        var lng = pos.coords.longitude.toFixed(6);
+        statusEl.textContent = "Opening your messages app…";
+        window.location.href = smsLink(MSG + "https://maps.google.com/?q=" + lat + "," + lng);
+      },
+      function () { fallback(); },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  });
+
+  function fallback() {
+    statusEl.textContent = "Couldn't get location — opening a text anyway. Please attach your location in the message.";
+    setTimeout(function () {
+      window.location.href = smsLink(MSG + "(location unavailable — please tap + to attach it)");
+    }, 1500);
+  }
+</script>
+</body>
+</html>
